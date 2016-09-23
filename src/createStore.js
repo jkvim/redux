@@ -7,6 +7,7 @@ import $$observable from 'symbol-observable'
  * If the current state is undefined, you must return the initial state.
  * Do not reference these action types directly in your code.
  */
+ // Redux 内部的初始状态
 export var ActionTypes = {
   INIT: '@@redux/INIT'
 }
@@ -123,11 +124,15 @@ export default function createStore(reducer, preloadedState, enhancer) {
 
   /**
    * Dispatches an action. It is the only way to trigger a state change.
+   * 激发一次行为，dispatch是触发改变状态的唯一方法
    *
    * The `reducer` function, used to create the store, will be called with the
    * current state tree and the given `action`. Its return value will
    * be considered the **next** state of the tree, and the change listeners
    * will be notified.
+   *
+   * reducer 函数是用来创建 store 的， 调用的时候会传入当前的 state 和 action 作为
+   * 参数，它的返回值作为状态树的下一状态，并且通知 listeners
    *
    * The base implementation only supports plain object actions. If you want to
    * dispatch a Promise, an Observable, a thunk, or something else, you need to
@@ -135,13 +140,24 @@ export default function createStore(reducer, preloadedState, enhancer) {
    * example, see the documentation for the `redux-thunk` package. Even the
    * middleware will eventually dispatch plain object actions using this method.
    *
+   * redux 只实现了基本的 object 作为action， 如果想激发其它类型的action， 例如
+   * Promise, Observable, thunk 或者其他的类型， 你需要封装你创建 store 的函数到对应
+   * 中间件中，例如，可以参考 redux-thunk 的文档。 尽管最终中间件触发的 action 是
+   * object
+   *
    * @param {Object} action A plain object representing “what changed”. It is
    * a good idea to keep actions serializable so you can record and replay user
    * sessions, or use the time travelling `redux-devtools`. An action must have
    * a `type` property which may not be `undefined`. It is a good idea to use
    * string constants for action types.
    *
+   * action 是一个 object 对象，代表了“什么改变了”。 最好保持 action 的序列化，这样
+   * 让你记录和回放用户的会话，或者使用 redux-devtools 的时间穿梭。action 必须有 type
+   * 属性，这个属性不能是 undefined，建议使用字符串常量作为 action types
+   *
    * @returns {Object} For convenience, the same action object you dispatched.
+   *
+   * 为了方便，返回的和你触发一样的 action
    *
    * Note that, if you use a custom middleware, it may wrap `dispatch()` to
    * return something else (for example, a Promise you can await).
@@ -184,9 +200,14 @@ export default function createStore(reducer, preloadedState, enhancer) {
   /**
    * Replaces the reducer currently used by the store to calculate the state.
    *
+   * 给 store 替换当前的 reducer 并且计算 state
+   *
    * You might need this if your app implements code splitting and you want to
    * load some of the reducers dynamically. You might also need this if you
    * implement a hot reloading mechanism for Redux.
+   *
+   * 当你的代码是分离的或者需要实现一个 Redux 的 hot reloading 机制时，你可能需要使
+   * 用这个函数
    *
    * @param {Function} nextReducer The reducer for the store to use instead.
    * @returns {void}
@@ -202,7 +223,13 @@ export default function createStore(reducer, preloadedState, enhancer) {
 
   /**
    * Interoperability point for observable/reactive libraries.
+   *
+   * 给 observable/reactive 库的协同点
+   *
    * @returns {observable} A minimal observable of state changes.
+   *
+   * 返回一个 observable 对象，代表了最小可观察的状态变化
+   *
    * For more information, see the observable proposal:
    * https://github.com/zenparsing/es-observable
    */
@@ -211,11 +238,21 @@ export default function createStore(reducer, preloadedState, enhancer) {
     return {
       /**
        * The minimal observable subscription method.
+       *
+       * 最小可观察的订阅方法
+       *
        * @param {Object} observer Any object that can be used as an observer.
+       * observer 是任何可以作为 observer 的对象
+       *
        * The observer object should have a `next` method.
+       * observer 对象应该有一个 next 方法
+       *
        * @returns {subscription} An object with an `unsubscribe` method that can
        * be used to unsubscribe the observable from the store, and prevent further
        * emission of values from the observable.
+       *
+       * 返回一个有 unsubscribe 的对象，可以从取消订阅 store 中的 observerable 并且
+       * 阻止之后来自这个 observable 的值。
        */
       subscribe(observer) {
         if (typeof observer !== 'object') {
@@ -242,6 +279,9 @@ export default function createStore(reducer, preloadedState, enhancer) {
   // When a store is created, an "INIT" action is dispatched so that every
   // reducer returns their initial state. This effectively populates
   // the initial state tree.
+  //
+  // 当一个 store 创建之后， 一个 “INIT” 行为会被激发， 所以所有的 reducer 都会返回
+  // 他们的最初状态，这使得状态树被有效填充
   dispatch({ type: ActionTypes.INIT })
 
   return {
