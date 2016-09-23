@@ -87,6 +87,10 @@ function assertReducerSanity(reducers) {
  * into a single state object, whose keys correspond to the keys of the passed
  * reducer functions.
  *
+ * 将一个包含不同 reducer 函数的对象转换为一个单独的 reducer 函数，它会调用所有的子
+ * reducer 并且将它们的结果合并成一个 state 对象，该对象的 key 对应于参数的 reducers
+ * key
+ *
  * @param {Object} reducers An object whose values correspond to different
  * reducer functions that need to be combined into one. One handy way to obtain
  * it is to use ES6 `import * as reducers` syntax. The reducers may never return
@@ -94,8 +98,16 @@ function assertReducerSanity(reducers) {
  * if the state passed to them was undefined, and the current state for any
  * unrecognized action.
  *
+ * reducers 是一个包含了多个 reducer 函数的对象，可以通过 `import * as reducers`
+ * 的语法来获得，reducers 对于任何 action 都不会返回 undefined。如果传给 reducer 的
+ * 状态是 undefined 那么他们应该返回初始状态。如果 action 没有对应的处理，则返回当前
+ * 状态
+ *
  * @returns {Function} A reducer function that invokes every reducer inside the
  * passed object, and builds a state object with the same shape.
+ *
+ * 返回一个函数，该函数会调用所有 reducer 并且将每个调用每个 reducer 得到的状态， 组合
+ * 为一个对象。
  */
 export default function combineReducers(reducers) {
   var reducerKeys = Object.keys(reducers)
