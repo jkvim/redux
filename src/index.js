@@ -11,6 +11,7 @@ import warning from './utils/warning'
 */
 function isCrushed() {}
 
+// 用于检测是否在非生产环境下，进行了代码压缩，若是则发出警告
 if (
   process.env.NODE_ENV !== 'production' &&
   typeof isCrushed.name === 'string' &&

@@ -7,21 +7,35 @@ import $$observable from 'symbol-observable'
  * If the current state is undefined, you must return the initial state.
  * Do not reference these action types directly in your code.
  */
- // Redux 内部的初始状态
+ /* Redux 私有的 action types
+  * 对于任何未知的 actions，必须返回当前状态
+  * 如果当前状态是未定义的，必须返回初始状态
+  * 不要在你的代码中直接引用这个 action types
+  */
 export var ActionTypes = {
   INIT: '@@redux/INIT'
 }
 
 /**
  * Creates a Redux store that holds the state tree.
+ *
+ * 创建一个维护了一颗状态树的 Redux store
+ *
  * The only way to change the data in the store is to call `dispatch()` on it.
+ *
+ * 改变这个 store 的数据的唯一方法是调用它的 dispatch()
  *
  * There should only be a single store in your app. To specify how different
  * parts of the state tree respond to actions, you may combine several reducers
  * into a single reducer function by using `combineReducers`.
  *
+ * 你的应用中应该只有一个 store，为了说明状态树各个状态对于 action 的反应，你可能需要
+ * 利用 combineReducers 将多个 reducers 组合成一个 reducer 函数
+ *
  * @param {Function} reducer A function that returns the next state tree, given
  * the current state tree and the action to handle.
+ *
+ * 一个 reducer 函数传入当前的状态树和需要处理的 action，返回下一个状态数。
  *
  * @param {any} [preloadedState] The initial state. You may optionally specify it
  * to hydrate the state from the server in universal apps, or to restore a
@@ -29,13 +43,23 @@ export var ActionTypes = {
  * If you use `combineReducers` to produce the root reducer function, this must be
  * an object with the same shape as `combineReducers` keys.
  *
+ * preloadedState 是初始状态。你可以选择从服务端获得状态，或者是之前已经序列化的用户
+ * 会话
+ * 如果你使用 combineReducers 来得到根 reducer 函数，那么 preloadedState 就必须拥有
+ * 和 combineReducers 一样的key
+ *
  * @param {Function} enhancer The store enhancer. You may optionally specify it
  * to enhance the store with third-party capabilities such as middleware,
  * time travel, persistence, etc. The only store enhancer that ships with Redux
  * is `applyMiddleware()`.
  *
+ * enhancer 函数是 store 的增强器。你可以通过第三方的中间件来获取时间旅行，持久化等能力
+ * 唯一会集成到 Redux 的 store 增强器是 applyMiddleware
+ *
  * @returns {Store} A Redux store that lets you read the state, dispatch actions
  * and subscribe to changes.
+ *
+ * 返回一个 Redux store，你可以通过它读取 state，触发 action 和订阅变化
  */
 export default function createStore(reducer, preloadedState, enhancer) {
   if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
@@ -70,6 +94,8 @@ export default function createStore(reducer, preloadedState, enhancer) {
   /**
    * Reads the state tree managed by the store.
    *
+   * 读取由 store 管理的状态树
+   *
    * @returns {any} The current state tree of your application.
    */
   function getState() {
@@ -81,8 +107,13 @@ export default function createStore(reducer, preloadedState, enhancer) {
    * and some part of the state tree may potentially have changed. You may then
    * call `getState()` to read the current state tree inside the callback.
    *
+   * 添加一个变化的监听器。他会在 action 触发后进行调用，同时，状态树的某部分可能发生了
+   * 变化。这时候，你可以调用 getState 来读取当前的状态树
+   *
    * You may call `dispatch()` from a change listener, with the following
    * caveats:
+   *
+   * 你可以在监听器中调用 dispatch，但是会有以下的警告：
    *
    * 1. The subscriptions are snapshotted just before every `dispatch()` call.
    * If you subscribe or unsubscribe while the listeners are being invoked, this
@@ -90,14 +121,28 @@ export default function createStore(reducer, preloadedState, enhancer) {
    * However, the next `dispatch()` call, whether nested or not, will use a more
    * recent snapshot of the subscription list.
    *
+   * 1. 这个订阅是每次调用 diapatch 之前的快照，如果你在将监听器在调用时订阅或者取消
+   * 订阅，对于已经调用的 dipatch 不会有任何作用，然而，下一个 dispatch 调用，将会使用
+   * 最近的订阅列表快照
+   *
    * 2. The listener should not expect to see all state changes, as the state
    * might have been updated multiple times during a nested `dispatch()` before
    * the listener is called. It is, however, guaranteed that all subscribers
    * registered before the `dispatch()` started will be called with the latest
    * state by the time it exits.
    *
+   * 2. 不应该期望在监听器中看到所有的状态变化，因为在一个嵌套的 dispatch 中，监听器调
+   * 用之前，状态可能已经发生了多次更新，但是，所有在 dispatch 开始之前注册的订阅者，
+   * 都会被调用，并且获得最新的状态。
+   *
+   *
    * @param {Function} listener A callback to be invoked on every dispatch.
+   *
+   * listener 是每个 dispatch 都会调用的回调函数
+   *
    * @returns {Function} A function to remove this change listener.
+   *
+   * 返回一个函数，可以去除监听器
    */
   function subscribe(listener) {
     if (typeof listener !== 'function') {
