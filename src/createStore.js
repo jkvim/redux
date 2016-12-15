@@ -35,7 +35,7 @@ export var ActionTypes = {
  * @param {Function} reducer A function that returns the next state tree, given
  * the current state tree and the action to handle.
  *
- * 一个 reducer 函数传入当前的状态树和需要处理的 action，返回下一个状态数。
+ * reducer 函数, 传入当前的状态树和需要处理的 action，返回下一个状态树。
  *
  * @param {any} [preloadedState] The initial state. You may optionally specify it
  * to hydrate the state from the server in universal apps, or to restore a
@@ -62,11 +62,15 @@ export var ActionTypes = {
  * 返回一个 Redux store，你可以通过它读取 state，触发 action 和订阅变化
  */
 export default function createStore(reducer, preloadedState, enhancer) {
+  // preloadedState 可以省略，使用 enhancer 作为第二个
   if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
     enhancer = preloadedState
     preloadedState = undefined
   }
 
+  // store 增强器必须是一个函数，类似 applyMiddleware，store 增强器的函数签名应该是
+  // (createStore) => func, 此时如果有多个 store 增强器，就可以利用 compose 进行
+  // 串联
   if (typeof enhancer !== 'undefined') {
     if (typeof enhancer !== 'function') {
       throw new Error('Expected the enhancer to be a function.')
@@ -138,7 +142,7 @@ export default function createStore(reducer, preloadedState, enhancer) {
    *
    * @param {Function} listener A callback to be invoked on every dispatch.
    *
-   * listener 是每个 dispatch 都会调用的回调函数
+   * listener 是每次 dispatch 都会调用的回调函数
    *
    * @returns {Function} A function to remove this change listener.
    *
@@ -149,6 +153,7 @@ export default function createStore(reducer, preloadedState, enhancer) {
       throw new Error('Expected listener to be a function.')
     }
 
+    // 每个 listener 有自己的 isSubscribed 状态
     var isSubscribed = true
 
     ensureCanMutateNextListeners()
@@ -222,12 +227,14 @@ export default function createStore(reducer, preloadedState, enhancer) {
       )
     }
 
+    // isDispatching 是全局的状态
     if (isDispatching) {
       throw new Error('Reducers may not dispatch actions.')
     }
 
     try {
       isDispatching = true
+      // 更新全局状态
       currentState = currentReducer(currentState, action)
     } finally {
       isDispatching = false

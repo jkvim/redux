@@ -16,6 +16,12 @@
  *
  * 返回值是将参数函数从右到左组合起来的函数，例如，compose(f, g, h) 等价于返回一个
  * (...args) => f(g(h(...args)))
+ * 
+ * 在 redux 中 compose 有两个应用的场景，一个是 applyMiddleware ，一个是在 createStore
+ * 之前，使用 applyMiddleware 的返回结果作为参数，生成串联的 store enhancer
+ * 
+ * funcs = [f1, f2, f3]
+ * f1, f2, f3 的函数签名应该都是单参数的并且返回结果是函数，即 x => func
  */
 
 export default function compose(...funcs) {

@@ -6,12 +6,16 @@ function getUndefinedStateErrorMessage(key, action) {
   var actionType = action && action.type
   var actionName = actionType && `"${actionType.toString()}"` || 'an action'
 
+  // 不应该有 Action 没被 reducer 处理，如果是忽略的 Action 应该返回 previous state,
+  // 这里应该是没有设置 default 引起的错误
   return (
     `Given action ${actionName}, reducer "${key}" returned undefined. ` +
     `To ignore an action, you must explicitly return the previous state.`
   )
 }
 
+// 如果发现 reducers 和 inputState 不是同构的，则发出警告，以 reducers key 为准
+// 可以检查返回的状态是否正确
 function getUnexpectedStateShapeWarningMessage(inputState, reducers, action, unexpectedKeyCache) {
   var reducerKeys = Object.keys(reducers)
   var argumentName = action && action.type === ActionTypes.INIT ?
@@ -58,6 +62,8 @@ function assertReducerSanity(reducers) {
     var reducer = reducers[key]
     var initialState = reducer(undefined, { type: ActionTypes.INIT })
 
+    // 检查 reducer 是否有为 state 设置初始状态，并且在 action type 是 @@INIT
+    // 的时候返回初始状态
     if (typeof initialState === 'undefined') {
       throw new Error(
         `Reducer "${key}" returned undefined during initialization. ` +
@@ -67,6 +73,8 @@ function assertReducerSanity(reducers) {
       )
     }
 
+    // 检查 reducer 是否有针对未知的 action type 的处理，检测到未知的 type，
+    // 应该返回当前的状态，如果当前状态是 undefined ，则应该返回初始状态
     var type = '@@redux/PROBE_UNKNOWN_ACTION_' + Math.random().toString(36).substring(7).split('').join('.')
     if (typeof reducer(undefined, { type }) === 'undefined') {
       throw new Error(
@@ -106,8 +114,8 @@ function assertReducerSanity(reducers) {
  * @returns {Function} A reducer function that invokes every reducer inside the
  * passed object, and builds a state object with the same shape.
  *
- * 返回一个函数，该函数会调用所有 reducer 并且将每个调用每个 reducer 得到的状态， 组合
- * 为一个对象。
+ * 返回一个函数，该函数会调用所有 reducers 对象中所有的 reducer ，并且将每个 reducer 返回
+ * 的状态， 组合为一个和 reducers 同构的对象。
  */
 export default function combineReducers(reducers) {
   var reducerKeys = Object.keys(reducers)
@@ -138,6 +146,7 @@ export default function combineReducers(reducers) {
     sanityError = e
   }
 
+  // 闭包，模块模式，这个 state 是全局的，还是局部的？ 可能是全局，也可能是局部
   return function combination(state = {}, action) {
     if (sanityError) {
       throw sanityError
@@ -156,7 +165,7 @@ export default function combineReducers(reducers) {
       var key = finalReducerKeys[i]
       var reducer = finalReducers[key]
       var previousStateForKey = state[key]
-      var nextStateForKey = reducer(previousStateForKey, action)
+      var nextStateForKey = reducer(previousStateForKey, action) // 如果 reducers 是嵌套的，这里的 reducer 可能是 combination 函数，因此能逐层深入末端的 state ，例如 a.b.c
       if (typeof nextStateForKey === 'undefined') {
         var errorMessage = getUndefinedStateErrorMessage(key, action)
         throw new Error(errorMessage)

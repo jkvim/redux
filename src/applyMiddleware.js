@@ -6,7 +6,7 @@ import compose from './compose'
  * asynchronous actions in a concise manner, or logging every action payload.
  *
  * 创建一个 store 增强器，这个增强器可以将中间件应用于 Redux store 的 dispatch 方法。
- * 这可以很方便地处理不同任务，例如表达用简洁的方式表达异步 action，或者记录每个 action
+ * 这可以很方便地处理不同任务，例如用简洁的方式表达异步 action，或者记录每个 action
  * 的 payload
  *
  * See `redux-thunk` package as an example of the Redux middleware.
@@ -38,11 +38,14 @@ export default function applyMiddleware(...middlewares) {
     var dispatch = store.dispatch
     var chain = []
 
+    // dispatch 使用匿名函数是为了让 dispatch 可以更新
     var middlewareAPI = {
       getState: store.getState,
-      dispatch: (action) => dispatch(action)
+      dispatch: (action) => dispatch(action) 
     }
-    chain = middlewares.map(middleware => middleware(middlewareAPI))
+   
+    // 此时chain 中的函数就可以看成 dispatch 的增强器，和 store 增强器是一个概念
+    chain = middlewares.map(middleware => middleware(middlewareAPI))  
     dispatch = compose(...chain)(store.dispatch)
 
     return {
